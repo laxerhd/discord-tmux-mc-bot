@@ -1,0 +1,5 @@
+first time using tmux: tmux new -s mybot
+
+leave tmux session: Strng+B then D
+
+reattach to tmux mybot session: tmux attach -t mybot
