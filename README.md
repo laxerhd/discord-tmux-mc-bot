@@ -27,16 +27,6 @@ To set up this bot, you will need a few prerequisites:
      sudo apt-get install tmux
      ```
 
-4. **Discord Bot Token**
-   - You will need to add your Discord bot token to your environment variables so that the bot can authenticate with Discord. This can be done by adding the following line to your `.bashrc` or `.bash_profile` file:
-     ```sh
-     export DISCORD_BOT_TOKEN="your-bot-token-here"
-     ```
-   - After adding the line, make sure to reload your terminal configuration:
-     ```sh
-     source ~/.bashrc
-     ```
-
 Once these prerequisites are in place, you should be ready to get started!
 
 ## Getting Started
@@ -57,6 +47,7 @@ To manage both the Discord bot and the Minecraft server, you'll need to create t
   ```
 
 To detach from any `tmux` session, press `Ctrl + B` followed by `D` on your keyboard. This will allow the sessions to continue running in the background.
+
 
 ### Additional Configuration
 
@@ -83,7 +74,7 @@ Once everything is set up, you can start the Discord bot by running the provided
    Before running the bot, make sure you have set the environment variable for the Discord bot token as described above.
    You can do that by running this command in your discord tmux session.
    ```sh
-   export DISCORD_TOKEN="YOUR DISCORD TOKEN"
+   export DISCORD_BOT_TOKEN="your-bot-token-here"
    ```
 
 3. **Run the Script**
