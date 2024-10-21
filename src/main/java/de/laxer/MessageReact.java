@@ -158,7 +158,7 @@ public class MessageReact extends ListenerAdapter {
                 channel.sendMessageEmbeds(eb.build()).queue();
 
                 // Entferne die TMUX-Umgebungsvariable und sende den Startbefehl an die tmux-Session 'mcserver'
-                String[] cmd = {"/bin/bash", "-c", "unset TMUX; tmux send-keys -t mcserver './start.sh' C-m"};
+                String[] cmd = {"/bin/bash", "-c", "unset TMUX; tmux send-keys -t mcserver '" + server_start_script_name + "' C-m"};
                 Process process = Runtime.getRuntime().exec(cmd);
                 int exitCode = process.waitFor();
                 if (exitCode == 0) {
