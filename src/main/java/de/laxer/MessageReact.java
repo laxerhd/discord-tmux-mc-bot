@@ -24,27 +24,29 @@ public class MessageReact extends ListenerAdapter {
     private final String server_ip = DiscordBotMain.getServer_ip();
     private final String server_start_script_name = DiscordBotMain.getServerStartingScriptName();
 
-
-    private final Map<String, String> commands = new HashMap<>() {{
-        put("h", "Zeigt alle verfügbaren Befehle an.");
-        put("e", "Erstellt eine Umfrage.");
-        put("info", "Zeigt Informationen über den Bot an.");
-        put("restart", "Restartet den Minecraft-Server");
-    }};
+    private final Map<String, String> commands = new HashMap<>() {
+        {
+            put("help", "Zeigt alle verfügbaren Befehle an.");
+            put("e", "Erstellt eine Umfrage.");
+            put("info", "Zeigt Informationen über den Bot an.");
+            put("restart", "Restartet den Minecraft-Server");
+            put("status", "Checkt den Status des Minecraft-Servers ab");
+        }
+    };
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if (event.isFromGuild()) {
             String content = event.getMessage().getContentStripped();
             MessageChannelUnion channel = event.getChannel();
-            
+
             if (content.startsWith(prefix)) {
                 String[] args = content.split(" ", 2);
                 String command = args[0].substring(prefix.length()).toLowerCase();
                 logger.info("Used command was: " + command);
 
                 switch (command) {
-                    case "h":
+                    case "help":
                         showHelp(channel, event);
                         break;
                     case "e":
@@ -60,8 +62,14 @@ public class MessageReact extends ListenerAdapter {
                     case "restart":
                         restartMcServer(channel, event);
                         break;
+                    case "status":
+                        // checkMcStatus(channel, event);
+                        checkStatus(channel, event);
+                        break;
                     default:
-                        channel.sendMessage("Unbekannter Befehl. Verwenden Sie " + prefix + "h für eine Liste der Befehle.").queue();
+                        channel.sendMessage(
+                                "Unbekannter Befehl. Verwenden Sie " + prefix + "h für eine Liste der Befehle.")
+                                .queue();
                         break;
                 }
             }
@@ -77,9 +85,9 @@ public class MessageReact extends ListenerAdapter {
         }
 
         eb.setAuthor("Alle Befehle")
-          .setColor(0x0099FF)
-          .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
-          .setDescription(description.toString());
+                .setColor(0x0099FF)
+                .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
+                .setDescription(description.toString());
 
         channel.sendMessageEmbeds(eb.build()).queue();
     }
@@ -89,76 +97,64 @@ public class MessageReact extends ListenerAdapter {
 
         // Lösche die Originalnachricht
         event.getMessage().delete().queue(
-            success -> logger.info("Originalnachricht gelöscht."),
-            failure -> logger.warning("Fehler beim Löschen der Originalnachricht: " + failure.getMessage())
-        );
+                success -> logger.info("Originalnachricht gelöscht."),
+                failure -> logger.warning("Fehler beim Löschen der Originalnachricht: " + failure.getMessage()));
 
         // Erstelle eine neue Embed-Nachricht
         eb.setAuthor(event.getAuthor().getName())
-          .setColor(0x0099FF)
-          .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
-          .setThumbnail(Objects.requireNonNull(event.getAuthor().getAvatarUrl()))
-          .setDescription(message);
+                .setColor(0x0099FF)
+                .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
+                .setThumbnail(Objects.requireNonNull(event.getAuthor().getAvatarUrl()))
+                .setDescription(message);
 
         // Sende die neue Nachricht und füge Reaktionen hinzu
         channel.sendMessageEmbeds(eb.build()).queue(m -> {
             m.addReaction(Emoji.fromFormatted("✅")).queue();
             m.addReaction(Emoji.fromFormatted("❌")).queue();
         });
+        logger.info("Poll erfolgreich eröffnet!");
     }
 
     private void showBotInfo(MessageChannelUnion channel, MessageReceivedEvent event) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setAuthor("----------------------- Bot Information -----------------------")
-          .setColor(0x00FF00)
-          .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
-          .setDescription("Mein cooler Discord-Bot")
-          .addField("Ersteller", "Laxer", false)
-          .addField("Version", "Alpha", false);
-
-        channel.sendMessageEmbeds(eb.build()).queue();
+        sendMessage(channel, event, Status.INFO);
     }
 
+    private void checkStatus(MessageChannelUnion channel, MessageReceivedEvent event) {
+        if (checkServerStatus()) {
+            logger.info("Server ist noch Online!");
+            sendMessage(channel, event, Status.ONLINE);
+        } else {
+            logger.info("Server ist noch Offline!");
+            sendMessage(channel, event, Status.OFFLINE);
+        }
+    }
 
-    private boolean checkServerStatus(){
-        try{
-            Process process = Runtime.getRuntime().exec("pgrep -f " + server_start_script_name);
+    private boolean checkServerStatus() {
+        try {
+            Process process = Runtime.getRuntime().exec("pgrep -a -f " + server_start_script_name);
             int exitCode = process.waitFor();
             logger.info("pgrep exit code was: " + exitCode);
             return exitCode == 0;
-        } catch(Exception e)  {
+        } catch (Exception e) {
             logger.warning("Fehler beim Überprüfen des Server-Status: " + e.getMessage());
             return false;
         }
     }
 
-    private boolean restartMcServer(MessageChannelUnion channel, MessageReceivedEvent event){
-        if(checkServerStatus()) {
+    private boolean restartMcServer(MessageChannelUnion channel, MessageReceivedEvent event) {
+        if (checkServerStatus()) {
             logger.info("Server ist noch Online!");
+            // Server online msg
+            sendMessage(channel, event, Status.ONLINE);
 
-            // Build ChatMsg for Channel
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setAuthor("Minecraft-Server")
-                .setColor(0x2ab868)
-                .setFooter("Anfrage wurde um " + event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(time_format)) + " Uhr gestellt")
-                .setDescription("Der MC-Server läuft bereits.\nMit folgender IP kannst du dich verbinden: " + server_ip);
-    
-            channel.sendMessageEmbeds(eb.build()).queue();
-            
         } else {
             try {
-
-                // Build ChatMsg for Channel
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setAuthor("Minecraft-Server")
-                    .setColor(0xbf3134)
-                    .setFooter("Anfrage wurde um " + event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(time_format)) + " Uhr gestellt")
-                    .setDescription("Der Minecraft Server wird neugestartet.\nMit folgender IP kannst du ich verbinden: " + server_ip);
-        
-                channel.sendMessageEmbeds(eb.build()).queue();
-
-                // Entferne die TMUX-Umgebungsvariable und sende den Startbefehl an die tmux-Session 'mcserver'
-                String[] cmd = {"/bin/bash", "-c", "unset TMUX; tmux send-keys -t mcserver '" + server_start_script_name + "' C-m"};
+                logger.info("Server ist Offline!");
+                sendMessage(channel, event, Status.RESTART);
+                // Entferne die TMUX-Umgebungsvariable und sende den Startbefehl an die
+                // tmux-Session 'mcserver'
+                String[] cmd = { "/bin/bash", "-c",
+                        "unset TMUX; tmux send-keys -t mcserver 'bash " + server_start_script_name + "' C-m" };
                 Process process = Runtime.getRuntime().exec(cmd);
                 int exitCode = process.waitFor();
                 if (exitCode == 0) {
@@ -171,6 +167,48 @@ public class MessageReact extends ListenerAdapter {
             }
         }
         return true;
+    }
+
+    private void sendMessage(MessageChannelUnion channel, MessageReceivedEvent event, Status status) {
+        switch (status) {
+            case ONLINE:
+                EmbedBuilder eb_online = new EmbedBuilder();
+                eb_online.setAuthor("Minecraft-Server")
+                        .setColor(0x2ab868)
+                        .setDescription("Der MC-Server läuft bereits.\nMit folgender IP kannst du dich verbinden: "
+                                + server_ip);
+                channel.sendMessageEmbeds(eb_online.build()).queue();
+                break;
+            case RESTART:
+                EmbedBuilder eb_restart = new EmbedBuilder();
+                eb_restart.setAuthor("Minecraft-Server")
+                        .setColor(0xbf3134)
+                        .setDescription(
+                                "Der Minecraft Server wird neugestartet.\nMit folgender IP kannst du ich verbinden: "
+                                        + server_ip);
+                channel.sendMessageEmbeds(eb_restart.build()).queue();
+                break;
+            case OFFLINE:
+                EmbedBuilder eb_offline = new EmbedBuilder();
+                eb_offline.setAuthor("Minecraft-Server")
+                        .setColor(0xbf3134)
+                        .setDescription(
+                                "Der Minecraft Server ist zur Zeit offline.\nMit $restart kannst du ihn starten.\nServer-IP: "
+                                        + server_ip);
+                channel.sendMessageEmbeds(eb_offline.build()).queue();
+                break;
+            case INFO:
+                EmbedBuilder eb_info = new EmbedBuilder();
+                eb_info.setAuthor("----------------------- Bot Information -----------------------")
+                        .setColor(0x00FF00)
+                        .setFooter(event.getMessage().getTimeCreated().format(DateTimeFormatter.ofPattern(date_format)))
+                        .setDescription("Mein cooler Discord-Bot")
+                        .addField("Ersteller", "Laxer", false)
+                        .addField("Version", "Alpha", false);
+
+                channel.sendMessageEmbeds(eb_info.build()).queue();
+                break;
+        }
     }
 
 }
