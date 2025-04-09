@@ -15,9 +15,9 @@ public class DiscordBotMain {
     private static String status = "mit Fischen";
     
     // This is could be your public IP-Adress or a domain you own
-    private static String server_ip = "DEINE_IP_ADRESSE";
+    private static String server_ip = "fp2g.de";
     // What is the name of the script used for starting the minecraft server
-    private static String server_start_script_name = "./start.sh";
+    private static String server_start_script_name = "start2.sh";
 
     private static String activation_msg = """
 .---.       .-.    _       .-.    .--.       .-.   _             

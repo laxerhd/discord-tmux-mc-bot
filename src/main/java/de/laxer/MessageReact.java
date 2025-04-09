@@ -142,21 +142,23 @@ public class MessageReact extends ListenerAdapter {
     }
 
     private boolean restartMcServer(MessageChannelUnion channel, MessageReceivedEvent event) {
+        logger.info("Überprüfe Status von Minecraft Server");
         if (checkServerStatus()) {
             logger.info("Server ist noch Online!");
             // Server online msg
             sendMessage(channel, event, Status.ONLINE);
-
         } else {
             try {
                 logger.info("Server ist Offline!");
                 sendMessage(channel, event, Status.RESTART);
                 // Entferne die TMUX-Umgebungsvariable und sende den Startbefehl an die
                 // tmux-Session 'mcserver'
+                logger.info("Neustart-Command an Tmux Session senden...");
                 String[] cmd = { "/bin/bash", "-c",
                         "unset TMUX; tmux send-keys -t mcserver 'bash " + server_start_script_name + "' C-m" };
                 Process process = Runtime.getRuntime().exec(cmd);
                 int exitCode = process.waitFor();
+                logger.info("Gesendet!");
                 if (exitCode == 0) {
                     logger.info("Minecraft-Server wurde erfolgreich in der tmux-Session 'mcserver' gestartet.");
                 } else {
