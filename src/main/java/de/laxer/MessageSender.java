@@ -1,7 +1,6 @@
 package de.laxer;
 
 import java.time.Instant;
-
 import org.slf4j.Logger; // SLF4j Logger
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
@@ -47,4 +46,15 @@ public class MessageSender {
             failure -> logger.error("Konnte Embed-Nachricht nicht senden (Status {}): {}", status, failure.getMessage())
         );
     }
+
+        /** Sendet eine Fehler-Embed-Nachricht */
+        public void sendErrorEmbed(MessageChannelUnion channel, MessageReceivedEvent event, String title, String description) {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setColor(0xe74c3c) // Rot
+              .setTitle("⚠️ Fehler: " + title)
+              .setDescription(description)
+              .setFooter("Bei Problemen, kontaktiere den Bot-Admin.")
+              .setTimestamp(Instant.now());
+            channel.sendMessageEmbeds(eb.build()).queue();
+       }
 }

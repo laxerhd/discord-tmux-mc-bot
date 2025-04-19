@@ -1,10 +1,7 @@
 package de.laxer;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDAInfo;
-import net.dv8tion.jda.api.entities.MessageEmbed; // Import für Typisierung
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull; // Korrekter Import für JDA 5
@@ -14,11 +11,8 @@ import org.slf4j.LoggerFactory; // SLF4j Factory
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.Instant; // Besser für Zeitstempel
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,10 +23,6 @@ public class MessageReact extends ListenerAdapter {
     // SLF4j Logger
     private static final Logger logger = LoggerFactory.getLogger(MessageReact.class);
 
-    // Datumsformat für Embeds
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter
-            .ofPattern("dd.MM.yyyy | HH:mm:ss")
-            .withZone(ZoneId.systemDefault());
 
     // Konfiguration aus DiscordBotMain holen
     private final String prefix = DiscordBotMain.getPrefix();
@@ -42,7 +32,7 @@ public class MessageReact extends ListenerAdapter {
 
     // ExecutorService für asynchrone Aufgaben
     private final ExecutorService executorService;
-
+    private final MessageSender messageSender = new MessageSender();
     // Befehlsliste
     private final Map<String, String> commands = new HashMap<>() {{
         put("help", "Zeigt alle verfügbaren Befehle an.");
@@ -288,11 +278,6 @@ public class MessageReact extends ListenerAdapter {
         }
     }
 
-    // Kleine Record-Klasse, um die Ergebnisse des Prozesses zu speichern
-    private record ProcessResult(int exitCode, String stdout, String stderr) {}
-
-
-    // --- Nachrichtensende-Methoden ---
 
     /** Sendet eine Standard-Status-Embed-Nachricht */
     private void sendMessageEmbed(MessageChannelUnion channel, MessageReceivedEvent event, Status status) {

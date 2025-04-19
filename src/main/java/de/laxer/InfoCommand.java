@@ -5,6 +5,7 @@ import org.slf4j.Logger; // SLF4j Logger
 
 public class InfoCommand implements Command{
     
+    @Override
     public void execute(MessageReceivedEvent event, String message, Logger logger) {
         MessageSender messageSender = new MessageSender();
         MessageChannelUnion channel = event.getChannel();

@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger; // SLF4j Logger
 import org.slf4j.LoggerFactory; // SLF4j Factory
 
-import javax.security.auth.login.LoginException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
