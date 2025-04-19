@@ -98,7 +98,8 @@ public class MessageReact extends ListenerAdapter {
                         }
                         break;
                     case "info":
-                        showBotInfo(channel, event);
+                        InfoCommand infoCommand = new InfoCommand();
+                        infoCommand.execute(event, "", logger);
                         break;
                     case "restart":
                         handleRestartCommand(channel, event);
@@ -114,11 +115,6 @@ public class MessageReact extends ListenerAdapter {
                 }
             }
         }
-    }
-
-
-    private void showBotInfo(MessageChannelUnion channel, MessageReceivedEvent event) {
-        sendMessageEmbed(channel, event, Status.INFO); // Verwende die allgemeine Sendemethode
     }
 
     // --- Minecraft Server Interaktion (Asynchron) ---
@@ -321,15 +317,7 @@ public class MessageReact extends ListenerAdapter {
                   .setTitle("❌ Server ist Offline")
                   .setDescription("Der Minecraft-Server ist derzeit nicht erreichbar.\nMit `" + prefix + "restart` kannst du versuchen, ihn zu starten.\nServer-IP: `" + server_ip + "`");
                 break;
-            case INFO:
-                 eb.setTitle("🤖 Bot Information")
-                   .setColor(0x3498db) // Blau
-                   .setDescription("Ich bin ein Bot, der den Minecraft Server verwalten kann.")
-                   .addField("Entwickler", "Laxer", true)
-                   .addField("Version", "1.0.0", true) // Oder aus pom.xml holen?
-                   .addField("Prefix", "`" + prefix + "`", true)
-                   .addField("Server IP", "`" + server_ip + "`", false)
-                   .addField("Ping", event.getJDA().getGatewayPing() + "ms", true);
+            default:
                  break;
         }
         channel.sendMessageEmbeds(eb.build()).queue(
