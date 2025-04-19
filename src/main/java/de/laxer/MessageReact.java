@@ -87,11 +87,12 @@ public class MessageReact extends ListenerAdapter {
                 switch (command) {
                     case "help", "h":
                         HelpCommand helpCommand = new HelpCommand();
-                        helpCommand.execute(event);
+                        helpCommand.execute(event, "", logger);
                         break;
-                    case "e":
+                    case "event", "e":
                         if (commandArgs != null && !commandArgs.isBlank()) {
-                            createPoll(channel, event, commandArgs);
+                            PollCommand pollCommand = new PollCommand();
+                            pollCommand.execute(event, commandArgs, logger);
                         } else {
                             channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix + "e Sollten wir Pizza bestellen?`").queue();
                         }
@@ -115,46 +116,6 @@ public class MessageReact extends ListenerAdapter {
         }
     }
 
-    // --- Befehlsmethoden ---
-
-    private void showHelp(MessageChannelUnion channel, MessageReceivedEvent event) {
-        EmbedBuilder eb = new EmbedBuilder();
-        StringBuilder description = new StringBuilder("Hier sind alle Befehle, die du verwenden kannst:\n\n");
-
-        commands.forEach((cmd, desc) ->
-                description.append("`").append(prefix).append(cmd).append("` - ").append(desc).append("\n")
-        );
-
-        eb.setTitle("🤖 Bot Hilfe")
-                .setColor(0x0099FF) // Helles Blau
-                .setDescription(description.toString())
-                .setFooter("Angefordert von " + event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl())
-                .setTimestamp(Instant.now()); // Aktueller Zeitstempel
-
-        channel.sendMessageEmbeds(eb.build()).queue();
-    }
-
-    private void createPoll(MessageChannelUnion channel, MessageReceivedEvent event, String message) {
-        // Originalnachricht löschen (optional, aber oft gewünscht)
-        event.getMessage().delete().queue(
-                success -> logger.debug("Originalnachricht für Umfrage gelöscht."),
-                failure -> logger.warn("Konnte Originalnachricht für Umfrage nicht löschen: {}", failure.getMessage())
-        );
-
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setAuthor(event.getAuthor().getName() + " fragt:", null, event.getAuthor().getEffectiveAvatarUrl())
-                .setColor(0x0099FF)
-                .setDescription("**" + message + "**") // Nachricht hervorheben
-                .setFooter("Abstimmung gestartet")
-                .setTimestamp(Instant.now());
-
-        // Embed senden und Reaktionen hinzufügen
-        channel.sendMessageEmbeds(eb.build()).queue(sentMessage -> {
-            sentMessage.addReaction(Emoji.fromUnicode("✅")).queue(); // Grüner Haken
-            sentMessage.addReaction(Emoji.fromUnicode("❌")).queue(); // Rotes Kreuz
-            logger.info("Umfrage '{}' erfolgreich erstellt von {}", message, event.getAuthor().getAsTag());
-        }, failure -> logger.error("Konnte Umfrage-Nachricht nicht senden: {}", failure.getMessage(), failure));
-    }
 
     private void showBotInfo(MessageChannelUnion channel, MessageReceivedEvent event) {
         sendMessageEmbed(channel, event, Status.INFO); // Verwende die allgemeine Sendemethode
