@@ -1,0 +1,26 @@
+<configuration>
+
+  <!-- Appender für Konsolenausgabe -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <!-- Format: Zeit [Thread] Level LoggerName - Nachricht Zeilenumbruch -->
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Setze den Log-Level für dein Bot-Paket -->
+  <!-- Ändere 'DEBUG' zu 'INFO' für weniger ausführliche Logs im Normalbetrieb -->
+  <logger name="de.laxer" level="DEBUG"/>
+
+  <!-- Setze Log-Level für JDA (INFO ist meist ausreichend) -->
+  <logger name="net.dv8tion.jda" level="INFO"/>
+  <!-- Setze Log-Level für den HTTP Client von JDA (WARN reduziert Rauschen) -->
+  <logger name="org.apache.http" level="WARN"/>
+
+  <!-- Root-Logger: Fängt alles andere ab -->
+  <!-- Loggt standardmäßig INFO und höher auf die Konsole -->
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>
