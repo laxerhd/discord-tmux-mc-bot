@@ -6,20 +6,109 @@
 
     <groupId>de.laxer</groupId>
     <artifactId>Event-Bot</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version> <!-- Oder 1.0-SNAPSHOT -->
+
+    <name>Discord Event Bot</name>
+    <description>A Discord bot to manage Minecraft server events and status.</description>
 
     <properties>
+        <!-- === Projekt-Einstellungen === -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <main.class>de.laxer.DiscordBotMain</main.class>
+
+        <!-- === Abhängigkeits-Versionen === -->
+        <!-- Prüfe auf die aktuellste STABILE JDA Version -->
+        <jda.version>5.0.0</jda.version>
+        <!-- Prüfe auf aktuelle SLF4j / Logback Versionen -->
+        <slf4j.version>2.0.13</slf4j.version>
+        <logback.version>1.5.6</logback.version>
+
+        <!-- === Plugin-Versionen === -->
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.shade.plugin.version>3.5.3</maven.shade.plugin.version>
+        <exec.maven.plugin.version>3.3.0</exec.maven.plugin.version>
+
     </properties>
 
     <dependencies>
+        <!-- JDA (Discord API) -->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-alpha.14</version>
+            <version>${jda.version}</version>
         </dependency>
+
+        <!-- Logging Framework (SLF4j API + Logback Implementation) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Shade Plugin: Erstellt eine ausführbare Fat-JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${main.class}</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Exec Plugin (optional, falls du 'mvn exec:java' weiter nutzen willst) -->
+             <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>exec-maven-plugin</artifactId>
+                 <version>${exec.maven.plugin.version}</version>
+                 <configuration>
+                     <mainClass>${main.class}</mainClass>
+                 </configuration>
+             </plugin>
+
+        </plugins>
+    </build>
 </project>

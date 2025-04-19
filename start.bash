@@ -1,5 +1,4 @@
 #!/bin/bash
-
-mvn compile
-echo "Starte den Bot..."
-mvn exec:java -Dexec.mainClass="de.laxer.DiscordBotMain"
+mvn clean package
+ 
+java -jar target/Event-Bot-1.0.0.jar
