@@ -1,144 +1,35 @@
 package de.laxer;
 
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-public class MessageReact extends ListenerAdapter {
-
-    // SLF4j Logger
-    private static final Logger logger = LoggerFactory.getLogger(MessageReact.class);
+import java.util.concurrent.ExecutorService;
 
 
-    // Konfiguration aus DiscordBotMain holen
-    private final String prefix = DiscordBotMain.getPrefix();
-    private final String server_ip = DiscordBotMain.getServer_ip();
-    private final String server_start_script_name = DiscordBotMain.getServerStartingScriptName();
-    private final String tmux_session_name = DiscordBotMain.getTmuxSessionName();
+import org.slf4j.Logger;
 
-    // ExecutorService für asynchrone Aufgaben
+public class MinecraftSessionHandler {
+
     private final ExecutorService executorService;
-    private final MessageSender messageSender = new MessageSender(logger);
-    private final MinecraftSessionHandler sessionHandler;
-
-    // Commands
-    Command helpCommand;
-    Command pollCommand;
-    Command restartCommand;
-    Command infoCommand;
-
-
-    // Konstruktor, um ExecutorService zu injizieren
-    public MessageReact(ExecutorService executorService) {
+    private final Logger logger;
+    public MinecraftSessionHandler(Logger logger, ExecutorService executorService) {
+        this.logger = logger;
         this.executorService = executorService;
-        sessionHandler = new MinecraftSessionHandler(logger, executorService);
-
-        helpCommand = new HelpCommand(messageSender, logger);
-        pollCommand = new PollCommand(messageSender, logger);
-        restartCommand = new RestartCommand(messageSender, logger, executorService, sessionHandler);
-        infoCommand = new InfoCommand(messageSender, logger);
     }
-
-    @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) { // @NotNull verwenden
-        // Ignoriere Bots und Webhooks
-        if (event.getAuthor().isBot() || event.isWebhookMessage()) {
-            return;
-        }
-
-        // Nur auf Nachrichten aus Gilden (Servern) reagieren
-        if (event.isFromGuild()) {
-            String content = event.getMessage().getContentStripped();
-            MessageChannelUnion channel = event.getChannel();
-            // Prüfe auf Prefix
-            if (content.startsWith(prefix)) {
-                // Befehl und Argumente trennen
-                String[] args = content.substring(prefix.length()).trim().split("\\s+", 2);
-                String command = args[0].toLowerCase();
-                String commandArgs = (args.length > 1) ? args[1] : null; // Argumente, falls vorhanden
-
-                logger.debug("Guild: '{}', Channel: '#{}', User: '{}' used command: '{}'{}",
-                        event.getGuild().getName(),
-                        event.getChannel().getName(),
-                        event.getAuthor().getAsTag(),
-                        command,
-                        (commandArgs != null ? " with args: '" + commandArgs + "'" : ""));
-
-                // Befehl ausführen
-                switch (command) {
-                    case "help", "h":
-                        helpCommand.execute(event, "");
-                        break;
-                    case "event", "e":
-                        if (commandArgs != null && !commandArgs.isBlank()) {
-                            pollCommand.execute(event, commandArgs);
-                        } else {
-                            channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix + "e Sollten wir Pizza bestellen?`").queue();
-                        }
-                        break;
-                    case "info":
-                        infoCommand.execute(event, "");
-                        break;
-                    case "restart":
-                        restartCommand.execute(event, "");
-                        // handleRestartCommand(channel, event);
-                        break;
-                    case "status":
-                        handleStatusCommand(channel, event);
-                        break;
-                    default:
-                        channel.sendMessage(
-                                "Unbekannter Befehl: `" + command + "`. Verwende `" + prefix + "help` für eine Liste aller Befehle.")
-                                .queue();
-                        break;
-                }
-            }
-        }
-    }
-
-    // --- Minecraft Server Interaktion (Asynchron) ---
-
-    private void handleStatusCommand(MessageChannelUnion channel, MessageReceivedEvent event) {
-        channel.sendTyping().queue(); // Zeigt an, dass der Bot arbeitet
-        checkServerStatusAsync().thenAccept(isOnline -> {
-            if (isOnline) {
-                logger.info("Server Status Check: Online");
-                messageSender.sendMessageEmbed(channel, event, Status.ONLINE);
-            } else {
-                logger.info("Server Status Check: Offline");
-                messageSender.sendMessageEmbed(channel, event, Status.OFFLINE);
-            }
-        }).exceptionally(ex -> {
-            logger.error("Fehler bei der asynchronen Statusprüfung: {}", ex.getMessage(), ex);
-            messageSender.sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.", "Details findest du in den Bot-Logs.");
-            return null; // Erforderlich für exceptionally
-        });
-    }
-
-
-
-    // --- Asynchrone Helfermethoden für externe Prozesse ---
 
     /**
      * Prüft asynchron, ob der Serverprozess läuft (via pgrep).
      * Gibt true zurück, wenn der Prozess gefunden wird, sonst false.
      * Wirft eine Exception bei Fehlern während der Ausführung.
      */
-    private CompletableFuture<Boolean> checkServerStatusAsync() {
+    public CompletableFuture<Boolean> checkServerStatusAsync() {
         return CompletableFuture.supplyAsync(() -> {
             // Wichtig: Sicherstellen, dass 'server_start_script_name' eindeutig genug ist!
             // Ein vollständiger Pfad ist oft besser.
             // Beispiel: pgrep -f "/home/user/mcserver/start2.sh"
-            String commandToFind = server_start_script_name;
+            String commandToFind = Config.server_start_script_name;
             String[] cmd = {"/bin/bash", "-c", "pgrep -a -f \"" + commandToFind + "\""};
             logger.debug("Führe Statusprüfung aus: {}", String.join(" ", cmd));
             try {
@@ -172,24 +63,24 @@ public class MessageReact extends ListenerAdapter {
      * Gibt true zurück, wenn der Befehl erfolgreich gesendet wurde (Exit Code 0), sonst false.
      * Wirft eine Exception bei Fehlern während der Ausführung.
      */
-    private CompletableFuture<Boolean> startMcServerAsync() {
+    public CompletableFuture<Boolean> startMcServerAsync() {
         return CompletableFuture.supplyAsync(() -> {
             // Stelle sicher, dass der Pfad zum Startskript korrekt ist! Absoluter Pfad empfohlen.
-            String commandToSend = "bash " + server_start_script_name; // z.B. bash /home/user/mc/start.sh
+            String commandToSend = "bash " + Config.server_start_script_name; // z.B. bash /home/user/mc/start.sh
             // Der Befehl, der an tmux gesendet wird. 'C-m' simuliert Enter.
             String tmuxCommand = String.format("unset TMUX; tmux send-keys -t %s '%s' C-m",
-                                               tmux_session_name, commandToSend);
+            Config.tmux_session_name, commandToSend);
             String[] cmd = { "/bin/bash", "-c", tmuxCommand };
             logger.info("Sende Startbefehl an tmux: {}", tmuxCommand);
             try {
                 // Prüfe zuerst, ob die tmux Session existiert (optional, aber gut)
-                String[] checkSessionCmd = {"/bin/bash", "-c", "tmux has-session -t " + tmux_session_name};
+                String[] checkSessionCmd = {"/bin/bash", "-c", "tmux has-session -t " + Config.tmux_session_name};
                 ProcessResult sessionCheck = executeCommand(checkSessionCmd, 3);
                 if (sessionCheck.exitCode() != 0) {
-                     logger.error("tmux Session '{}' nicht gefunden! Server kann nicht gestartet werden. stderr: {}", tmux_session_name, sessionCheck.stderr());
-                     throw new RuntimeException("tmux Session '" + tmux_session_name + "' existiert nicht.");
+                     logger.error("tmux Session '{}' nicht gefunden! Server kann nicht gestartet werden. stderr: {}", Config.tmux_session_name, sessionCheck.stderr());
+                     throw new RuntimeException("tmux Session '" + Config.tmux_session_name + "' existiert nicht.");
                 }
-                logger.debug("tmux Session '{}' gefunden.", tmux_session_name);
+                logger.debug("tmux Session '{}' gefunden.", Config.tmux_session_name);
 
                 // Session existiert, sende den Startbefehl
                 ProcessResult result = executeCommand(cmd, 10); // 10 Sekunden Timeout
@@ -198,7 +89,7 @@ public class MessageReact extends ListenerAdapter {
                 logger.debug("tmux send-keys stderr: {}", result.stderr().isEmpty() ? "<leer>" : result.stderr());
 
                 if (result.exitCode() == 0) {
-                    logger.info("Startbefehl erfolgreich an tmux-Session '{}' gesendet.", tmux_session_name);
+                    logger.info("Startbefehl erfolgreich an tmux-Session '{}' gesendet.", Config.tmux_session_name);
                     return true;
                 } else {
                     logger.error("Fehler beim Senden des Startbefehls an tmux (Exit Code {}). stderr: {}", result.exitCode(), result.stderr());
@@ -216,7 +107,7 @@ public class MessageReact extends ListenerAdapter {
      * Hilfsmethode zum Ausführen externer Befehle mit Timeout und Stream-Handling.
      * Liest stdout und stderr asynchron, um Deadlocks zu vermeiden.
      */
-    private ProcessResult executeCommand(String[] command, long timeoutSeconds) throws Exception {
+    public ProcessResult executeCommand(String[] command, long timeoutSeconds) throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         Process process = processBuilder.start();
 
@@ -242,7 +133,7 @@ public class MessageReact extends ListenerAdapter {
     }
 
     /** Liest einen InputStream vollständig und gibt ihn als String zurück. */
-    private String readStream(java.io.InputStream stream) {
+    public String readStream(java.io.InputStream stream) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (Exception e) {
@@ -250,5 +141,4 @@ public class MessageReact extends ListenerAdapter {
             return "Fehler beim Lesen des Streams: " + e.getMessage();
         }
     }
-
 }
