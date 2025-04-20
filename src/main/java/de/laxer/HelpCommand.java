@@ -3,15 +3,20 @@ package de.laxer;
 import java.time.Instant;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
-import org.slf4j.Logger; // SLF4j Logger
-
+import org.slf4j.Logger;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 public class HelpCommand implements Command {
-    public HelpCommand() {}
+    private final MessageSender messageSender;
+    private final Logger logger;
+
+    public HelpCommand(MessageSender messageSender, Logger logger) {
+        this.messageSender = messageSender;
+        this.logger = logger;
+    }
 
     @Override
-    public void execute(MessageReceivedEvent event, String message, Logger logger) {
+    public void execute(MessageReceivedEvent event, String message) {
         EmbedBuilder eb = new EmbedBuilder();
         StringBuilder description = new StringBuilder("Hier sind alle Befehle, die du verwenden kannst:\n\n");
         MessageChannelUnion channel = event.getChannel();

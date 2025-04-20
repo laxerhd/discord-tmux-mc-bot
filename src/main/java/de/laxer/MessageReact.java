@@ -1,18 +1,13 @@
 package de.laxer;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull; // Korrekter Import für JDA 5
-import org.slf4j.Logger; // SLF4j Logger
-import org.slf4j.LoggerFactory; // SLF4j Factory
-
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.time.Instant; // Besser für Zeitstempel
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,15 +27,8 @@ public class MessageReact extends ListenerAdapter {
 
     // ExecutorService für asynchrone Aufgaben
     private final ExecutorService executorService;
-    private final MessageSender messageSender = new MessageSender();
-    // Befehlsliste
-    private final Map<String, String> commands = new HashMap<>() {{
-        put("help", "Zeigt alle verfügbaren Befehle an.");
-        put("e", "Erstellt eine Umfrage mit ✅ / ❌ Reaktionen.");
-        put("info", "Zeigt Informationen über den Bot an.");
-        put("restart", "Startet den Minecraft-Server (nur wenn er offline ist).");
-        put("status", "Überprüft, ob der Minecraft-Server online oder offline ist.");
-    }};
+    private final MessageSender messageSender = new MessageSender(logger);
+
 
     // Konstruktor, um ExecutorService zu injizieren
     public MessageReact(ExecutorService executorService) {
@@ -76,20 +64,20 @@ public class MessageReact extends ListenerAdapter {
                 // Befehl ausführen
                 switch (command) {
                     case "help", "h":
-                        HelpCommand helpCommand = new HelpCommand();
-                        helpCommand.execute(event, "", logger);
+                        HelpCommand helpCommand = new HelpCommand(messageSender, logger);
+                        helpCommand.execute(event, "");
                         break;
                     case "event", "e":
                         if (commandArgs != null && !commandArgs.isBlank()) {
-                            PollCommand pollCommand = new PollCommand();
-                            pollCommand.execute(event, commandArgs, logger);
+                            PollCommand pollCommand = new PollCommand(messageSender, logger);
+                            pollCommand.execute(event, commandArgs);
                         } else {
                             channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix + "e Sollten wir Pizza bestellen?`").queue();
                         }
                         break;
                     case "info":
-                        InfoCommand infoCommand = new InfoCommand();
-                        infoCommand.execute(event, "", logger);
+                        InfoCommand infoCommand = new InfoCommand(messageSender, logger);
+                        infoCommand.execute(event, "");
                         break;
                     case "restart":
                         handleRestartCommand(channel, event);
@@ -114,14 +102,14 @@ public class MessageReact extends ListenerAdapter {
         checkServerStatusAsync().thenAccept(isOnline -> {
             if (isOnline) {
                 logger.info("Server Status Check: Online");
-                sendMessageEmbed(channel, event, Status.ONLINE);
+                messageSender.sendMessageEmbed(channel, event, Status.ONLINE);
             } else {
                 logger.info("Server Status Check: Offline");
-                sendMessageEmbed(channel, event, Status.OFFLINE);
+                messageSender.sendMessageEmbed(channel, event, Status.OFFLINE);
             }
         }).exceptionally(ex -> {
             logger.error("Fehler bei der asynchronen Statusprüfung: {}", ex.getMessage(), ex);
-            sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.", "Details findest du in den Bot-Logs.");
+            messageSender.sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.", "Details findest du in den Bot-Logs.");
             return null; // Erforderlich für exceptionally
         });
     }
@@ -131,11 +119,11 @@ public class MessageReact extends ListenerAdapter {
         checkServerStatusAsync().thenCompose(isOnline -> {
             if (isOnline) {
                 logger.info("Server ist bereits online. Kein Neustart erforderlich.");
-                sendMessageEmbed(channel, event, Status.ONLINE); // Informiere, dass er schon läuft
+                messageSender.sendMessageEmbed(channel, event, Status.ONLINE); // Informiere, dass er schon läuft
                 return CompletableFuture.completedFuture(false); // Kein Startversuch nötig
             } else {
                 logger.info("Server ist offline. Starte Neustart-Versuch...");
-                sendMessageEmbed(channel, event, Status.RESTART); // Nachricht, dass der Start versucht wird
+                messageSender.sendMessageEmbed(channel, event, Status.RESTART); // Nachricht, dass der Start versucht wird
                 return startMcServerAsync(); // Starte den Server asynchron (gibt true zurück, wenn Befehl gesendet)
             }
         }).thenAccept(startCommandSent -> {
@@ -148,7 +136,7 @@ public class MessageReact extends ListenerAdapter {
             // Wenn !startCommandSent, wurde die ONLINE Nachricht schon gesendet.
         }).exceptionally(ex -> {
             logger.error("Fehler im Neustart-Prozess: {}", ex.getMessage(), ex);
-            sendErrorEmbed(channel, event, "Fehler beim Starten des Servers.", "Der Startbefehl konnte nicht gesendet werden oder die Statusprüfung schlug fehl. Details in den Logs.");
+            messageSender.sendErrorEmbed(channel, event, "Fehler beim Starten des Servers.", "Der Startbefehl konnte nicht gesendet werden oder die Statusprüfung schlug fehl. Details in den Logs.");
             return null;
         });
     }
@@ -278,47 +266,4 @@ public class MessageReact extends ListenerAdapter {
         }
     }
 
-
-    /** Sendet eine Standard-Status-Embed-Nachricht */
-    private void sendMessageEmbed(MessageChannelUnion channel, MessageReceivedEvent event, Status status) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setAuthor("Minecraft Server", null, event.getJDA().getSelfUser().getEffectiveAvatarUrl()) // Bot-Avatar
-          .setFooter("Angefordert von " + event.getAuthor().getName(), event.getAuthor().getEffectiveAvatarUrl())
-          .setTimestamp(Instant.now());
-
-        switch (status) {
-            case ONLINE:
-                eb.setColor(0x2ecc71) // Grün
-                  .setTitle("✅ Server ist Online")
-                  .setDescription("Der Minecraft-Server läuft.\nVerbinde dich mit: `" + server_ip + "`");
-                break;
-            case RESTART: // Bedeutet jetzt "Wird gestartet"
-                 eb.setColor(0xf39c12) // Orange
-                   .setTitle("🚀 Starte Server...")
-                   .setDescription("Der Befehl zum Starten des Minecraft-Servers wurde gesendet.\nEs kann einen Moment dauern, bis er verfügbar ist.\nServer-IP: `" + server_ip + "`");
-                 break;
-            case OFFLINE:
-                eb.setColor(0xe74c3c) // Rot
-                  .setTitle("❌ Server ist Offline")
-                  .setDescription("Der Minecraft-Server ist derzeit nicht erreichbar.\nMit `" + prefix + "restart` kannst du versuchen, ihn zu starten.\nServer-IP: `" + server_ip + "`");
-                break;
-            default:
-                 break;
-        }
-        channel.sendMessageEmbeds(eb.build()).queue(
-            success -> {}, // Nichts tun bei Erfolg
-            failure -> logger.error("Konnte Embed-Nachricht nicht senden (Status {}): {}", status, failure.getMessage())
-        );
-    }
-
-    /** Sendet eine Fehler-Embed-Nachricht */
-    private void sendErrorEmbed(MessageChannelUnion channel, MessageReceivedEvent event, String title, String description) {
-         EmbedBuilder eb = new EmbedBuilder();
-         eb.setColor(0xe74c3c) // Rot
-           .setTitle("⚠️ Fehler: " + title)
-           .setDescription(description)
-           .setFooter("Bei Problemen, kontaktiere den Bot-Admin.")
-           .setTimestamp(Instant.now());
-         channel.sendMessageEmbeds(eb.build()).queue();
-    }
 }

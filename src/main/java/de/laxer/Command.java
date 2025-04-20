@@ -8,5 +8,7 @@ import org.slf4j.Logger; // SLF4j Logger
 
 
 public interface Command {
-    void execute(MessageReceivedEvent event, String message, Logger logger);
+
+    void execute(MessageReceivedEvent event, String message);
+
 }

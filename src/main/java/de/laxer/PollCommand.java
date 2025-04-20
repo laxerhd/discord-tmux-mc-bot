@@ -5,13 +5,21 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.slf4j.Logger; // SLF4j Logger
+import org.slf4j.Logger;
 
 
 public class PollCommand implements Command{
-
+    private final MessageSender messageSender;  
+    private final Logger logger;
+    
+    public PollCommand(MessageSender messageSender, Logger logger) {
+        this.messageSender = messageSender;
+        this.logger = logger;
+    }
+    
+    // TODO: MessageSender Klasse benutzen, um den Embed zu erstellen
     @Override
-    public void execute(MessageReceivedEvent event, String message, Logger logger) {
+    public void execute(MessageReceivedEvent event, String message) {
         MessageChannelUnion channel = event.getChannel();
         // Originalnachricht löschen (optional, aber oft gewünscht)
         event.getMessage().delete().queue(

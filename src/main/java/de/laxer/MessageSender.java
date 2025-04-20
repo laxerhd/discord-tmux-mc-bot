@@ -1,14 +1,18 @@
 package de.laxer;
 
 import java.time.Instant;
-import org.slf4j.Logger; // SLF4j Logger
+import org.slf4j.Logger;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class MessageSender {
-        /** Sendet eine Standard-Status-Embed-Nachricht */
-    public void sendMessageEmbed(MessageChannelUnion channel, MessageReceivedEvent event, Status status, Logger logger) {
+    Logger logger;
+    public MessageSender(Logger logger) {
+        this.logger = logger;   
+    }
+
+    public void sendMessageEmbed(MessageChannelUnion channel, MessageReceivedEvent event, Status status) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setAuthor("Minecraft Server", null, event.getJDA().getSelfUser().getEffectiveAvatarUrl()) // Bot-Avatar
           .setFooter("Angefordert von " + event.getAuthor().getName(), event.getAuthor().getEffectiveAvatarUrl())
