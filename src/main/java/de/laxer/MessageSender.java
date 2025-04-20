@@ -44,6 +44,17 @@ public class MessageSender {
                    .addField("Server IP", "`" + Config.server_ip + "`", false)
                    .addField("Ping", event.getJDA().getGatewayPing() + "ms", true);
                  break;
+            case HELP:
+                StringBuilder description = new StringBuilder("Hier sind alle Befehle, die du verwenden kannst:\n\n");
+                Config.commands.forEach((cmd, desc) ->
+                    description.append("`").append(Config.prefix).append(cmd).append("` - ").append(desc).append("\n")
+                );
+                eb.setTitle("🤖 Bot Hilfe")
+                    .setColor(0x0099FF) // Helles Blau
+                    .setDescription(description.toString())
+                    .setFooter("Angefordert von " + event.getAuthor().getAsTag(), event.getAuthor().getEffectiveAvatarUrl())
+                    .setTimestamp(Instant.now()); // Aktueller Zeitstempel
+                break;
         }
         channel.sendMessageEmbeds(eb.build()).queue(
             success -> {}, // Nichts tun bei Erfolg

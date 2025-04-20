@@ -4,5 +4,6 @@ public enum Status {
     ONLINE,
     RESTART,
     OFFLINE,
-    INFO
+    INFO,
+    HELP
 }

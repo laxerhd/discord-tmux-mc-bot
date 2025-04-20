@@ -5,15 +5,12 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 
-public class StatusCommand implements Command {
+public class StatusCommand extends Command {
 
-    private final MessageSender messageSender;
-    private final Logger logger;
     private final MinecraftSessionHandler sessionHandler;
 
     public StatusCommand(MessageSender messageSender, Logger logger, MinecraftSessionHandler sessionHandler) {
-        this.messageSender = messageSender;
-        this.logger = logger;
+        super(messageSender, logger);
         this.sessionHandler = sessionHandler;
     }
 
@@ -35,7 +32,7 @@ public class StatusCommand implements Command {
         }).exceptionally(ex -> {
             logger.error("Fehler bei der asynchronen Statusprüfung: {}", ex.getMessage(), ex);
             messageSender.sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.", "Details findest du in den Bot-Logs.");
-            return null; // Erforderlich für exceptionally
+            return null;
         });
     }
     

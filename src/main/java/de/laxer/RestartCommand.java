@@ -1,23 +1,17 @@
 package de.laxer;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-public class RestartCommand implements Command {
-    private final Logger logger;
-    private final MessageSender messageSender;
-    private final ExecutorService executorService;
+public class RestartCommand extends Command {
     private final MinecraftSessionHandler sessionHandler;
 
-    public RestartCommand(MessageSender messageSender, Logger logger, ExecutorService executorService, MinecraftSessionHandler sessionHandler) {
-        this.messageSender = messageSender;
-        this.logger = logger;
-        this.executorService = executorService;
+    public RestartCommand(MessageSender messageSender, Logger logger, MinecraftSessionHandler sessionHandler) {
+        super(messageSender, logger);
         this.sessionHandler = sessionHandler;
     }
 

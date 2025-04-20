@@ -8,13 +8,10 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 
 
-public class PollCommand implements Command{
-    private final MessageSender messageSender;  
-    private final Logger logger;
+public class PollCommand extends Command{
     
     public PollCommand(MessageSender messageSender, Logger logger) {
-        this.messageSender = messageSender;
-        this.logger = logger;
+        super(messageSender, logger);
     }
     
     // TODO: MessageSender Klasse benutzen, um den Embed zu erstellen

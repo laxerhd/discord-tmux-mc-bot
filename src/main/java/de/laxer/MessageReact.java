@@ -33,7 +33,7 @@ public class MessageReact extends ListenerAdapter {
 
         helpCommand = new HelpCommand(messageSender, logger);
         pollCommand = new PollCommand(messageSender, logger);
-        restartCommand = new RestartCommand(messageSender, logger, executorService, sessionHandler);
+        restartCommand = new RestartCommand(messageSender, logger, sessionHandler);
         infoCommand = new InfoCommand(messageSender, logger);
         statusCommand = new StatusCommand(messageSender, logger, sessionHandler);
     }
