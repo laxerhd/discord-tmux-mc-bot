@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.concurrent.ExecutorService;
 
-
 import org.slf4j.Logger;
 
 public class MinecraftSessionHandler {

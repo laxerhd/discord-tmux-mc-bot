@@ -6,8 +6,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.slf4j.Logger; // SLF4j Logger
-import org.slf4j.LoggerFactory; // SLF4j Factory
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,15 +15,14 @@ import java.util.concurrent.TimeUnit;
 
 public class DiscordBotMain {
 
-    // SLF4j Logger Instanz holen
     private static final Logger logger = LoggerFactory.getLogger(DiscordBotMain.class);
 
     // --- Konfiguration ---
-    private static final String prefix = "$";
-    private static final String status = "mit Fischen";
-    private static final String server_ip = "friendsplaytogether.de"; // Oder aus Config laden
-    private static final String server_start_script_name = "start2.sh"; // Sicherstellen, dass Pfad korrekt ist!
-    private static final String tmux_session_name = "mcserver";
+    private static final String prefix = Config.prefix;
+    private static final String status = Config.status;
+    private static final String server_ip = Config.server_ip; // Oder aus Config laden
+    private static final String server_start_script_name = Config.server_start_script_name; // Sicherstellen, dass Pfad korrekt ist!
+    private static final String tmux_session_name = Config.tmux_session_name;
 
     // ExecutorService für asynchrone Aufgaben
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -104,23 +103,5 @@ public class DiscordBotMain {
             logger.error("Ein unerwarteter Fehler ist beim Starten des Bots aufgetreten!", e);
             System.exit(1);
         }
-    }
-
-
-    // --- Getter für Konfiguration ---
-    public static String getPrefix() {
-        return prefix;
-    }
-
-    public static String getServer_ip() {
-        return server_ip;
-    }
-
-    public static String getServerStartingScriptName(){
-        return server_start_script_name;
-    }
-
-    public static String getTmuxSessionName() {
-        return tmux_session_name;
     }
 }
