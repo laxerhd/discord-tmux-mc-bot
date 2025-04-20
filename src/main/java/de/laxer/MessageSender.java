@@ -69,7 +69,7 @@ public class MessageSender {
             .setTimestamp(Instant.now());
         break;
     }
-    channel.sendMessageEmbeds(eb.build()).queue(sentMessage -> {
+    channel.sendMessageEmbeds(eb.build()).setSuppressedNotifications(true).queue(sentMessage -> {
       if (status == Status.POLL) {
         reactMessagePoll(event, channel, eb, sentMessage, message);
       }
