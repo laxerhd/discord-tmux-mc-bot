@@ -13,6 +13,6 @@ public class HelpCommand extends Command {
     @Override
     public void execute(MessageReceivedEvent event, String message) {
         MessageChannelUnion channel = event.getChannel();
-        messageSender.sendMessageEmbed(channel, event, Status.HELP);
+        messageSender.sendMessageEmbed(channel, event, Status.HELP, "");
     } 
 }

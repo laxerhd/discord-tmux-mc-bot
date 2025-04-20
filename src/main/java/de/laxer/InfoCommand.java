@@ -13,6 +13,6 @@ public class InfoCommand extends Command{
     @Override
     public void execute(MessageReceivedEvent event, String message) {
         MessageChannelUnion channel = event.getChannel();
-        messageSender.sendMessageEmbed(channel, event, Status.INFO);
+        messageSender.sendMessageEmbed(channel, event, Status.INFO, "");
     }
 }

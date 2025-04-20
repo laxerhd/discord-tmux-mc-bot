@@ -25,11 +25,11 @@ public class RestartCommand extends Command {
         sessionHandler.checkServerStatusAsync().thenCompose(isOnline -> {
             if (isOnline) {
                 logger.info("Server ist bereits online. Kein Neustart erforderlich.");
-                messageSender.sendMessageEmbed(channel, event, Status.ONLINE); // Informiere, dass er schon läuft
+                messageSender.sendMessageEmbed(channel, event, Status.ONLINE, ""); // Informiere, dass er schon läuft
                 return CompletableFuture.completedFuture(false); // Kein Startversuch nötig
             } else {
                 logger.info("Server ist offline. Starte Neustart-Versuch...");
-                messageSender.sendMessageEmbed(channel, event, Status.RESTART); // Nachricht, dass der Start versucht wird
+                messageSender.sendMessageEmbed(channel, event, Status.RESTART, ""); // Nachricht, dass der Start versucht wird
                 return sessionHandler.startMcServerAsync(); // Starte den Server asynchron (gibt true zurück, wenn Befehl gesendet)
             }
         }).thenAccept(startCommandSent -> {

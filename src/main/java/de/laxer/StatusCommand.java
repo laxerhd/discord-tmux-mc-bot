@@ -24,10 +24,10 @@ public class StatusCommand extends Command {
         sessionHandler.checkServerStatusAsync().thenAccept(isOnline -> {
             if (isOnline) {
                 logger.info("Server Status Check: Online");
-                messageSender.sendMessageEmbed(channel, event, Status.ONLINE);
+                messageSender.sendMessageEmbed(channel, event, Status.ONLINE, "");
             } else {
                 logger.info("Server Status Check: Offline");
-                messageSender.sendMessageEmbed(channel, event, Status.OFFLINE);
+                messageSender.sendMessageEmbed(channel, event, Status.OFFLINE, "");
             }
         }).exceptionally(ex -> {
             logger.error("Fehler bei der asynchronen Statusprüfung: {}", ex.getMessage(), ex);
