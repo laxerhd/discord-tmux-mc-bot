@@ -29,10 +29,20 @@ public class MessageReact extends ListenerAdapter {
     private final ExecutorService executorService;
     private final MessageSender messageSender = new MessageSender(logger);
 
+    // Commands
+    Command helpCommand;
+    Command pollCommand;
+    // Command restartCommand;
+    Command infoCommand;
+
 
     // Konstruktor, um ExecutorService zu injizieren
     public MessageReact(ExecutorService executorService) {
         this.executorService = executorService;
+        helpCommand = new HelpCommand(messageSender, logger);
+        pollCommand = new PollCommand(messageSender, logger);
+        // restartCommand = new RestartCommand(messageSender, logger);
+        infoCommand = new InfoCommand(messageSender, logger);
     }
 
     @Override
@@ -64,19 +74,16 @@ public class MessageReact extends ListenerAdapter {
                 // Befehl ausführen
                 switch (command) {
                     case "help", "h":
-                        HelpCommand helpCommand = new HelpCommand(messageSender, logger);
                         helpCommand.execute(event, "");
                         break;
                     case "event", "e":
                         if (commandArgs != null && !commandArgs.isBlank()) {
-                            PollCommand pollCommand = new PollCommand(messageSender, logger);
                             pollCommand.execute(event, commandArgs);
                         } else {
                             channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix + "e Sollten wir Pizza bestellen?`").queue();
                         }
                         break;
                     case "info":
-                        InfoCommand infoCommand = new InfoCommand(messageSender, logger);
                         infoCommand.execute(event, "");
                         break;
                     case "restart":
