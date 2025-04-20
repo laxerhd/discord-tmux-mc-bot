@@ -24,7 +24,7 @@ public class HelpCommand implements Command {
         Config.commands.forEach((cmd, desc) ->
                 description.append("`").append(Config.prefix).append(cmd).append("` - ").append(desc).append("\n")
         );
-        // TODO: Utils Classe benutzen, um den Embed zu erstellen
+        // TODO: MessageSender Klasse benutzen, um den Embed zu erstellen
         eb.setTitle("🤖 Bot Hilfe")
                 .setColor(0x0099FF) // Helles Blau
                 .setDescription(description.toString())
