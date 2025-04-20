@@ -11,11 +11,13 @@ public class Config {
     public static final String tmux_session_name = "mcserver";
 
     // Befehlsliste
-    public static final Map<String, String> commands = new HashMap<>() {{
-        put("help", "Zeigt alle verfügbaren Befehle an.");
-        put("e", "Erstellt eine Umfrage mit ✅ / ❌ Reaktionen.");
-        put("info", "Zeigt Informationen über den Bot an.");
-        put("restart", "Startet den Minecraft-Server (nur wenn er offline ist).");
-        put("status", "Überprüft, ob der Minecraft-Server online oder offline ist.");
-    }};
+    public static final Map<String, String> commands = new HashMap<>() {
+        {
+            put("help", "Zeigt alle verfügbaren Befehle an.");
+            put("e", "Erstellt eine Umfrage mit ✅ / ❌ Reaktionen.");
+            put("info", "Zeigt Informationen über den Bot an.");
+            put("restart", "Startet den Minecraft-Server (nur wenn er offline ist).");
+            put("status", "Überprüft, ob der Minecraft-Server online oder offline ist.");
+        }
+    };
 }

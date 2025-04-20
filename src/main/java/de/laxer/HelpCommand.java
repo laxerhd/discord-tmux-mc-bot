@@ -14,5 +14,5 @@ public class HelpCommand extends Command {
     public void execute(MessageReceivedEvent event, String message) {
         MessageChannelUnion channel = event.getChannel();
         messageSender.sendMessageEmbed(channel, event, Status.HELP, "");
-    } 
+    }
 }

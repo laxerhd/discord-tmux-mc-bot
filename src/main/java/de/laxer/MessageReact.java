@@ -72,7 +72,8 @@ public class MessageReact extends ListenerAdapter {
                         if (commandArgs != null && !commandArgs.isBlank()) {
                             pollCommand.execute(event, commandArgs);
                         } else {
-                            channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix + "e Sollten wir Pizza bestellen?`").queue();
+                            channel.sendMessage("Bitte gib eine Nachricht für die Umfrage an. Beispiel: `" + prefix
+                                    + "e Sollten wir Pizza bestellen?`").queue();
                         }
                         break;
                     case "info":
@@ -86,7 +87,8 @@ public class MessageReact extends ListenerAdapter {
                         break;
                     default:
                         channel.sendMessage(
-                                "Unbekannter Befehl: `" + command + "`. Verwende `" + prefix + "help` für eine Liste aller Befehle.")
+                                "Unbekannter Befehl: `" + command + "`. Verwende `" + prefix
+                                        + "help` für eine Liste aller Befehle.")
                                 .queue();
                         break;
                 }

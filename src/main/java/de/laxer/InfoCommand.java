@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.slf4j.Logger;
 
-public class InfoCommand extends Command{
+public class InfoCommand extends Command {
 
     public InfoCommand(MessageSender messageSender, Logger logger) {
         super(messageSender, logger);

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-
 public class StatusCommand extends Command {
 
     private final MinecraftSessionHandler sessionHandler;
@@ -31,9 +30,10 @@ public class StatusCommand extends Command {
             }
         }).exceptionally(ex -> {
             logger.error("Fehler bei der asynchronen Statusprüfung: {}", ex.getMessage(), ex);
-            messageSender.sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.", "Details findest du in den Bot-Logs.");
+            messageSender.sendErrorEmbed(channel, event, "Fehler beim Prüfen des Serverstatus.",
+                    "Details findest du in den Bot-Logs.");
             return null;
         });
     }
-    
+
 }

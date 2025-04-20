@@ -21,20 +21,20 @@ public class DiscordBotMain {
     private static final String prefix = Config.prefix;
     private static final String status = Config.status;
     private static final String server_ip = Config.server_ip; // Oder aus Config laden
-    private static final String server_start_script_name = Config.server_start_script_name; // Sicherstellen, dass Pfad korrekt ist!
+    private static final String server_start_script_name = Config.server_start_script_name; // Sicherstellen, dass Pfad
+                                                                                            // korrekt ist!
     private static final String tmux_session_name = Config.tmux_session_name;
 
     // ExecutorService für asynchrone Aufgaben
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private static final String activation_msg = """
-    .---.       .-.    _       .-.    .--.       .-.   _
-    : .; :     .' `.  :_;     .' `.  : ,. :      : :  :_;
-    :   .' .--.`. .'  .-. .--.`. .'  : :: :,-.,-.: :  .-.,-.,-. .--.
-    : .; :' .; :: :   : :`._-.': :   : :; :: ,. :: :_ : :: ,. :' '_.'
-    :___.'`.__.':_;   :_;`.__.':_;   `.__.':_;:_;`.__;:_;:_;:_;`.__.'
-                """;
-
+            .---.       .-.    _       .-.    .--.       .-.   _
+            : .; :     .' `.  :_;     .' `.  : ,. :      : :  :_;
+            :   .' .--.`. .'  .-. .--.`. .'  : :: :,-.,-.: :  .-.,-.,-. .--.
+            : .; :' .; :: :   : :`._-.': :   : :; :: ,. :: :_ : :: ,. :' '_.'
+            :___.'`.__.':_;   :_;`.__.':_;   `.__.':_;:_;`.__;:_;:_;:_;`.__.'
+                        """;
 
     public static void main(String[] args) {
 
@@ -59,7 +59,8 @@ public class DiscordBotMain {
                     .addEventListeners(new MessageReact(executorService))
                     .enableIntents(GatewayIntent.MESSAGE_CONTENT)
                     // Deaktiviere unnötige Caches (SCHEDULED_EVENTS ist in JDA 5 stabil vorhanden)
-                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
+                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER,
+                            CacheFlag.SCHEDULED_EVENTS);
 
             // Baue JDA Instanz
             JDA jda = builder.build();
@@ -75,7 +76,6 @@ public class DiscordBotMain {
             logger.info("Start Script: {}", server_start_script_name);
             logger.info("TMUX Session: {}", tmux_session_name);
             logger.info("====================================================");
-
 
             // Graceful Shutdown Hook hinzufügen
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
